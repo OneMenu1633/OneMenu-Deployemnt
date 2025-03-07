@@ -17,6 +17,9 @@ const FreshJuice = require('./models/FreshJuice.js');
 const AnnaDishes = require('./models/AnnaDishes.js');
 const itemsRoutes = require('./routes/itemRoutes.js'); 
 
+// Load environment variables
+require('dotenv').config();
+
 const instance = new razorpay({
   key_id: 'YOUR_KEY_ID',
   key_secret: 'YOUR_KEY_SECRET',
@@ -30,7 +33,8 @@ const app = express();
 const PORT = process.env.PORT || 5000;
     
 // MongoDB Connection URI
-const MONGODB_URI = 'mongodb+srv://ansarifurqan:WnuOCOLphYHrOFP0@cluster0.9j2gt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+// const MONGODB_URI = 'mongodb+srv://ansarifurqan:WnuOCOLphYHrOFP0@cluster0.9j2gt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+const MONGODB_URI = process.env.MONGODB_URI;
 const allowedOrigin = ['http://localhost:5173', 'http://localhost:5174', 'https://onemenu-admin.netlify.app', 'https://onemenu.netlify.app'];
 
 // Middleware
@@ -48,14 +52,14 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true 
     .then(() => console.log('MongoDB connected successfully 🚀'))
     .catch(error => console.error('MongoDB connection error:', error));
 
-// Nodemailer Setup
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'onemenu.it@gmail.com',
-        pass: 'euwo vymq gdxb jsmf' // Consider environment variables or secure vault for credentials
-    }
-});
+// // Nodemailer Setup
+// const transporter = nodemailer.createTransport({
+//     service: 'gmail',
+//     auth: {
+//         user: 'onemenu.it@gmail.com',
+//         pass: 'euwo vymq gdxb jsmf' // Consider environment variables or secure vault for credentials
+//     }
+// });
 
 // Helper: Send Email
 const sendEmail = (to, subject, text) => {
