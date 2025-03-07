@@ -31,7 +31,7 @@ const PORT = process.env.PORT || 5000;
     
 // MongoDB Connection URI
 const MONGODB_URI = 'mongodb+srv://ansarifurqan:WnuOCOLphYHrOFP0@cluster0.9j2gt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
-const allowedOrigin = ['https://onemenubyit.netlify.app', 'https://onemenuadmin.netlify.app', 'https://onemenu-admin.netlify.app', 'https://onemenu.netlify.app'];
+const allowedOrigin = ['http://localhost:5173', 'http://localhost:5174', 'https://onemenu-admin.netlify.app', 'https://onemenu.netlify.app'];
 
 // Middleware
 app.use(cors({
