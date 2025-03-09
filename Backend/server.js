@@ -33,8 +33,9 @@ const app = express();
 const PORT = process.env.PORT || 5000;
     
 // MongoDB Connection URI
-const MONGODB_URI = 'mongodb+srv://ansarifurqan:WnuOCOLphYHrOFP0@cluster0.9j2gt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
-const allowedOrigin = ['http://localhost:5173', 'http://localhost:5174', 'https://onemenu-admin.netlify.app', 'https://onemenu.netlify.app'];
+// const MONGODB_URI = 'mongodb+srv://ansarifurqan:WnuOCOLphYHrOFP0@cluster0.9j2gt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+const MONGODB_URI = process.env.MONGODB_URI;
+const allowedOrigin = ['http://localhost:5173', 'http://localhost:5174', 'https://onemenu-admin.netlify.app', 'https://onemenu.netlify.app','https://onemenubyit.netlify.app', 'https://onemenuadmin.netlify.app' ];
 
 // Middleware
 app.use(cors({
@@ -51,14 +52,14 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true 
     .then(() => console.log('MongoDB connected successfully 🚀'))
     .catch(error => console.error('MongoDB connection error:', error));
 
-// Nodemailer Setup
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'onemenu.it@gmail.com',
-        pass: 'euwo vymq gdxb jsmf' // Consider environment variables or secure vault for credentials
-    }
-});
+// // Nodemailer Setup
+// const transporter = nodemailer.createTransport({
+//     service: 'gmail',
+//     auth: {
+//         user: 'onemenu.it@gmail.com',
+//         pass: 'euwo vymq gdxb jsmf' // Consider environment variables or secure vault for credentials
+//     }
+// });
 
 // Helper: Send Email
 const sendEmail = (to, subject, text) => {
@@ -363,82 +364,6 @@ app.post('/api/send-whatsapp', (req, res) => {
     });
 });
 
-// // Endpoint to fetch product details by ID
-// app.get("/api/products/fooditems/:id", async (req, res) => {
-//   const productId = req.params.id;
-
-//   try {
-//     // Fetch product directly from the database
-//     const db = mongoose.connection.db; // Access the database
-//     const product = await db.collection("fooditems").findOne({ _id: new mongoose.Types.ObjectId(productId) });
-
-//     if (!product) {
-//       return res.status(404).json({ error: "Product not found" });
-//     }
-
-//     res.json(product); // Return the product details
-//   } catch (error) {
-//     console.error("Error fetching product:", error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// });
-
-app.get("/api/products/:collection/:id", async (req, res) => {
-  const collectionName = req.params.collection; // Get the collection name from the URL
-  const productId = req.params.id; // Get the product ID from the URL
-
-  // List of allowed collections to prevent unauthorized access
-  const allowedCollections = ["fooditems", "FreshJuice", "AnnaDishes", "frankies_Rolls"];
-
-  // Check if the requested collection is allowed
-  if (!allowedCollections.includes(collectionName)) {
-    return res.status(400).json({ error: "Invalid collection name" });
-  }
-
-  try {
-    const db = mongoose.connection.db; // Access the database
-    const product = await db.collection(collectionName).findOne({ _id: new mongoose.Types.ObjectId(productId) });
-
-    if (!product) {
-      return res.status(404).json({ error: "Product not found" });
-    }
-
-    res.json(product); // Return the product details
-  } catch (error) {
-    console.error("Error fetching product:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-// app.get('/api/search', async (req, res) => {
-//   const query = req.query.q;
-
-//   if (!query) {
-//     return res.status(400).json({ error: 'Search query is required' });
-//   }
-
-//   try {
-//     console.log("Search query received:", query); // Log the query
-
-//     // Query all collections in the database
-//     const foodItems = await FoodItems.find({ title: { $regex: query, $options: 'i' } }).exec();
-//     const freshJuice = await FreshJuice.find({ title: { $regex: query, $options: 'i' } }).exec();
-//     const frankiesRolls = await Frankies_Rolls.find({ title: { $regex: query, $options: 'i' } }).exec();
-//     const annaDishes = await AnnaDishes.find({ title: { $regex: query, $options: 'i' } }).exec();
-
-//     console.log("Food Items:", foodItems); // Log the results
-//     console.log("Fresh Juice:", freshJuice);
-//     console.log("Frankies Rolls:", frankiesRolls);
-//     console.log("Anna Dishes:", annaDishes);
-
-//     // Combine results
-//     const results = [...foodItems, ...freshJuice, ...frankiesRolls, ...annaDishes];
-//     res.json(results);
-//   } catch (error) {
-//     console.error('Error fetching search results:', error); // Log the error
-//     res.status(500).json({ error: 'Failed to fetch search results' });
-//   }
-// });
 
 // Start Server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
