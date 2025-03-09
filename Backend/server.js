@@ -365,5 +365,63 @@ app.post('/api/send-whatsapp', (req, res) => {
 });
 
 
+app.get("/api/products/:collection/:id", async (req, res) => {
+  const collectionName = req.params.collection; // Get the collection name from the URL
+  const productId = req.params.id; // Get the product ID from the URL
+
+  // List of allowed collections to prevent unauthorized access
+  const allowedCollections = ["fooditems", "FreshJuice", "AnnaDishes", "frankies_Rolls"];
+
+  // Check if the requested collection is allowed
+  if (!allowedCollections.includes(collectionName)) {
+    return res.status(400).json({ error: "Invalid collection name" });
+  }
+
+  try {
+    const db = mongoose.connection.db; // Access the database
+    const product = await db.collection(collectionName).findOne({ _id: new mongoose.Types.ObjectId(productId) });
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    res.json(product); // Return the product details
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// API for Search Bar
+// app.get('/api/search', async (req, res) => {
+//   const query = req.query.q;
+
+//   if (!query) {
+//     return res.status(400).json({ error: 'Search query is required' });
+//   }
+
+//   try {
+//     console.log("Search query received:", query); // Log the query
+
+//     // Query all collections in the database
+//     const foodItems = await FoodItems.find({ title: { $regex: query, $options: 'i' } }).exec();
+//     const freshJuice = await FreshJuice.find({ title: { $regex: query, $options: 'i' } }).exec();
+//     const frankiesRolls = await Frankies_Rolls.find({ title: { $regex: query, $options: 'i' } }).exec();
+//     const annaDishes = await AnnaDishes.find({ title: { $regex: query, $options: 'i' } }).exec();
+
+//     console.log("Food Items:", foodItems); // Log the results
+//     console.log("Fresh Juice:", freshJuice);
+//     console.log("Frankies Rolls:", frankiesRolls);
+//     console.log("Anna Dishes:", annaDishes);
+
+//     // Combine results
+//     const results = [...foodItems, ...freshJuice, ...frankiesRolls, ...annaDishes];
+//     res.json(results);
+//   } catch (error) {
+//     console.error('Error fetching search results:', error); // Log the error
+//     res.status(500).json({ error: 'Failed to fetch search results' });
+//   }
+// });
+
 // Start Server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
