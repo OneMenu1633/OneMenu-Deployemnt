@@ -16,6 +16,10 @@ const FrankiesRolls = require('./models/FrankiesRolls.js');
 const FreshJuice = require('./models/FreshJuice.js');
 const AnnaDishes = require('./models/AnnaDishes.js');
 const itemsRoutes = require('./routes/itemRoutes.js'); 
+const Order = require('./models/Order'); // Import the Order model
+
+const analysisController = require('./controllers/analysisController'); // Import the analysis controller
+
 
 // Load environment variables
 require('dotenv').config();
@@ -71,6 +75,9 @@ const sendEmail = (to, subject, text) => {
     });
 };
 
+// Routes
+app.get('/analysis', analysisController.getAnalysis); // Use the getAnalysis function
+
 // // Route: Fetch Products from Multiple Collections
 app.get('/api/products/:menuType', async (req, res) => {
     const { menuType } = req.params;
@@ -125,23 +132,23 @@ app.get('/', (req, res)=> res.send("App Working"));
 app.use('/api/auth', authRouter)
 app.use('/api/user', userRouter)
 
-//Live Order
-const orderSchema = new mongoose.Schema({
-  orderId: String,
-  orderStatus: String,
-  paymentStatus: String,
-  items: Array,
-  totalAmount: Number,
-  gst: Number,
-  date: Date,
-  customer: {
-    name: String,
-    email: String,
-    contact: String
-  }
-});
+// //Live Order
+// const orderSchema = new mongoose.Schema({
+//   orderId: String,
+//   orderStatus: String,
+//   paymentStatus: String,
+//   items: Array,
+//   totalAmount: Number,
+//   gst: Number,
+//   date: Date,
+//   customer: {
+//     name: String,
+//     email: String,
+//     contact: String
+//   }
+// });
 
-const Order = mongoose.model('Order', orderSchema);
+// const Order = mongoose.model('Order', orderSchema);
 
 // POST endpoint for adding an order
 app.post('/api/order', async (req, res) => {
