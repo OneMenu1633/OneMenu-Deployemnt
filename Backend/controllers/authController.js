@@ -8,7 +8,7 @@ const axios = require('axios'); // Ensure you import axios for making API calls
 
 // Register function
 module.exports.register = async (req, res) => {
-    const { name, email, password } = req.body; 
+    const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
         return res.json({ success: false, message: 'Missing Details' });
@@ -36,8 +36,27 @@ module.exports.register = async (req, res) => {
         const mailOption = {
             from: process.env.SENDER_EMAIL,
             to: email,
-            subject: 'Welcome to OneMenu',
-            text: `Welcome to our webiste. Your account has been created successfully with id: ${email}`
+            subject: 'Welcome to OneMenu Account Successfully Created',
+            text: `Your OneMenu account has been successfully created! You can now enjoy a seamless and automated canteen experience.
+
+Registered Email: ${email}
+
+Security Reminder:
+
+Keep your account details confidential.
+OneMenu will never ask for your password or OTP.
+If you didn’t sign up for this account, contact us immediately.
+Need Help?
+Our support team is here for you! Reach us at:
+onemenu.it@gmail.com
+
+Welcome aboard! 
+
+Best Regards,
+The OneMenu Team
+
+⚠ This is an automated email. Please do not reply.`
+
         }
 
         try {
@@ -139,8 +158,23 @@ module.exports.sendVerifyOtp = async (req, res) => {
         const mailOption = {
             from: process.env.SENDER_EMAIL,
             to: user.email,
-            subject: "Account Verification OTP",
-            text: `Your OTP is ${otp}. This OTP is valid for 24 hours.`,
+            subject: "Secure Your AIKTC OneMenu Account – OTP Inside!",
+            text: `Thank you for choosing AIKTC OneMenu App! To secure your account, please verify your email by entering the One-Time Password (OTP) below within the next 24 hours:
+
+OTP: ${otp}
+
+Important Security Notice:
+
+Never share your OTP with anyone, including AIKTC OneMenu staff.
+We will never ask for your OTP via call, message, or email.
+If you did not request this verification, please ignore this email. Your account will remain secure.
+For any assistance, contact us at:
+onemenu.it@gmail.com
+
+Stay secure,
+The AIKTC OneMenu App Team
+
+⚠ This is an automated email. Replies to this message are not monitored.`,
         };
 
         await transporter.sendMail(mailOption);
@@ -256,7 +290,22 @@ module.exports.sendResetOtp = async (req, res) => {
             from: process.env.SENDER_EMAIL,
             to: user.email,
             subject: 'Password Reset OTP',
-            text: `Your OTP for reset is ${otp}. Verify your account using this OTP.`,
+            text: `A request to reset your password has been received. Use the One-Time Password (OTP) below to proceed:
+
+OTP: ${otp}
+
+Important Security Notice:
+
+This OTP is valid for 24 hours.
+Do not share your OTP with anyone. AIKTC OneMenu will never ask for it.
+If you did not request a password reset, please ignore this email.
+For any assistance, contact us at:
+onemenu.it@gmail.com
+
+Stay secure,
+The AIKTC OneMenu App Team
+
+⚠ This is an automated email. Replies to this message are not monitored.`,
         };
 
         // Send the email

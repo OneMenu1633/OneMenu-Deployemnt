@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
   isAccountVerified: {type: Boolean, default: false},
   resetOtp: {type: String, default: ''},
   resetOtpExpireAt: {type: Number, default: 0},
+  registrationDate: { type: Date, default: Date.now }, // Add registration date
 })
 
 const userModel = mongoose.model.user || mongoose.model('User', userSchema);
