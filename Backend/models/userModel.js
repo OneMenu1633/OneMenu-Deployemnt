@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema({
   resetOtp: {type: String, default: ''},
   resetOtpExpireAt: {type: Number, default: 0},
   registrationDate: { type: Date, default: Date.now }, // Add registration date
+  role: { type: String, enum: ['user', 'admin'], default: 'user' } // Add role field
 })
 
 const userModel = mongoose.model.user || mongoose.model('User', userSchema);
