@@ -19,10 +19,11 @@ const itemsRoutes = require('./routes/itemRoutes.js');
 const Order = require('./models/Order'); // Import the Order model
 
 const analysisController = require('./controllers/analysisController'); // Import the analysis controller
-
+const protectAdmin = require('./middleware/protectAdmin.js')
 
 // Load environment variables
 require('dotenv').config();
+
 
 const instance = new razorpay({
   key_id: 'YOUR_KEY_ID',
@@ -131,6 +132,11 @@ app.get('/products/menu', async (req, res) => {
 app.get('/', (req, res)=> res.send("App Working"));
 app.use('/api/auth', authRouter)
 app.use('/api/user', userRouter)
+
+// Example protected admin route
+app.get('/admin-dashboard', protectAdmin, (req, res) => {
+  res.json({ success: true, message: "Welcome to the admin dashboard" });
+});
 
 // //Live Order
 // const orderSchema = new mongoose.Schema({
