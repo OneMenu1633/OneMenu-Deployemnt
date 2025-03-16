@@ -37,7 +37,7 @@ const PORT = process.env.PORT || 5000;
     
 // // MongoDB Connection URI
 const MONGODB_URI = process.env.MONGODB_URI;
-const allowedOrigin = ['http://localhost:5173', 'http://localhost:5174', 'https://onemenu-admin.netlify.app', 'https://onemenu.netlify.app'];
+const allowedOrigin = ['http://localhost:5173', 'http://localhost:5174', 'https://onemenu-admin.netlify.app', 'https://onemenu.netlify.app', 'https://onemenuadmin.netlify.app', 'https://onemenubyit.netlify.app' ];
 
 // Middleware
 app.use(cors({
