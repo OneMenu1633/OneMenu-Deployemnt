@@ -6,8 +6,9 @@ const frankiesrollSchema = new mongoose.Schema(
     price: { type: Number, required: true },
     rating: { type: Number, required: true },
     image: { type: String, required: true },
-    quantity: { type: Number, required: true },
-    approxTime: { type: Number, required: true },
+    quantity: { type: String, required: true },
+    approxTime: { type: String, required: true },
+    isAvailable: { type: Boolean, default: true },
   },
   { collection: 'frankies_Rolls', timestamps: true }
 );

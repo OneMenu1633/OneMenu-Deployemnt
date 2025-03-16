@@ -19,11 +19,9 @@ const itemsRoutes = require('./routes/itemRoutes.js');
 const Order = require('./models/Order'); // Import the Order model
 
 const analysisController = require('./controllers/analysisController'); // Import the analysis controller
-const protectAdmin = require('./middleware/protectAdmin.js')
 
 // Load environment variables
 require('dotenv').config();
-
 
 const instance = new razorpay({
   key_id: 'YOUR_KEY_ID',
@@ -37,10 +35,9 @@ instance.orders.create({ amount: 50000, currency: 'INR', receipt: 'order_rcptid_
 const app = express();
 const PORT = process.env.PORT || 5000;
     
-// MongoDB Connection URI
-// const MONGODB_URI = 'mongodb+srv://ansarifurqan:WnuOCOLphYHrOFP0@cluster0.9j2gt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+// // MongoDB Connection URI
 const MONGODB_URI = process.env.MONGODB_URI;
-const allowedOrigin = ['http://localhost:5173', 'http://localhost:5174', 'https://onemenu-admin.netlify.app', 'https://onemenu.netlify.app','https://onemenubyit.netlify.app', 'https://onemenuadmin.netlify.app' ];
+const allowedOrigin = ['http://localhost:5173', 'http://localhost:5174', 'https://onemenu-admin.netlify.app', 'https://onemenu.netlify.app'];
 
 // Middleware
 app.use(cors({
@@ -57,24 +54,6 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true 
     .then(() => console.log('MongoDB connected successfully 🚀'))
     .catch(error => console.error('MongoDB connection error:', error));
 
-// // Nodemailer Setup
-// const transporter = nodemailer.createTransport({
-//     service: 'gmail',
-//     auth: {
-//         user: 'onemenu.it@gmail.com',
-//         pass: 'euwo vymq gdxb jsmf' // Consider environment variables or secure vault for credentials
-//     }
-// });
-
-// Helper: Send Email
-const sendEmail = (to, subject, text) => {
-    return transporter.sendMail({
-        from: 'onemenu.it@gmail.com',
-        to,
-        subject,
-        text,
-    });
-};
 
 // Routes
 app.get('/analysis', analysisController.getAnalysis); // Use the getAnalysis function
@@ -128,33 +107,11 @@ app.get('/products/menu', async (req, res) => {
   }
 });
 
+
 // Dashboard
 app.get('/', (req, res)=> res.send("App Working"));
 app.use('/api/auth', authRouter)
 app.use('/api/user', userRouter)
-
-// Example protected admin route
-app.get('/admin-dashboard', protectAdmin, (req, res) => {
-  res.json({ success: true, message: "Welcome to the admin dashboard" });
-});
-
-// //Live Order
-// const orderSchema = new mongoose.Schema({
-//   orderId: String,
-//   orderStatus: String,
-//   paymentStatus: String,
-//   items: Array,
-//   totalAmount: Number,
-//   gst: Number,
-//   date: Date,
-//   customer: {
-//     name: String,
-//     email: String,
-//     contact: String
-//   }
-// });
-
-// const Order = mongoose.model('Order', orderSchema);
 
 // POST endpoint for adding an order
 app.post('/api/order', async (req, res) => {
@@ -284,6 +241,55 @@ app.delete("/api/products/delete/:stall/:id", async (req, res) => {
   }
 });
 
+app.put('/api/products/toggle-availability/:stall/:id', async (req, res) => {
+  const { stall, id } = req.params;
+
+  // Validate the ID
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: 'Invalid ID format' });
+  }
+
+  try {
+    let Model;
+
+    // Dynamically choose the model based on the `stall` parameter
+    switch (stall) {
+      case 'foodItems':
+        Model = Fooditems;
+        break;
+      case 'frankiesRolls':
+        Model = FrankiesRolls;
+        break;
+      case 'annaDishes':
+        Model = AnnaDishes;
+        break;
+      case 'freshJuice':
+        Model = FreshJuice;
+        break;
+      default:
+        return res.status(400).json({ message: 'Invalid stall type' });
+    }
+
+    // Find the product by ID
+    const product = await Model.findById(id);
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Toggle the isAvailable status
+    product.isAvailable = !product.isAvailable;
+
+    // Save the updated product
+    const updatedProduct = await product.save();
+
+    res.json({ success: true, updatedProduct });
+  } catch (error) {
+    console.error('Error toggling product availability:', error);
+    res.status(500).json({ message: 'Error toggling product availability', error });
+  }
+});
+
 // PUT route to update the order status of an order
 app.put('/api/order/:orderId', (req, res) => {
   const { orderId } = req.params;
@@ -377,7 +383,6 @@ app.post('/api/send-whatsapp', (req, res) => {
     });
 });
 
-
 app.get("/api/products/:collection/:id", async (req, res) => {
   const collectionName = req.params.collection; // Get the collection name from the URL
   const productId = req.params.id; // Get the product ID from the URL
@@ -405,7 +410,6 @@ app.get("/api/products/:collection/:id", async (req, res) => {
   }
 });
 
-// API for Search Bar
 // app.get('/api/search', async (req, res) => {
 //   const query = req.query.q;
 
@@ -435,6 +439,7 @@ app.get("/api/products/:collection/:id", async (req, res) => {
 //     res.status(500).json({ error: 'Failed to fetch search results' });
 //   }
 // });
+
 
 // Start Server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

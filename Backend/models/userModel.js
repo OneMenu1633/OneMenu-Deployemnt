@@ -10,8 +10,8 @@ const userSchema = new mongoose.Schema({
   isAccountVerified: {type: Boolean, default: false},
   resetOtp: {type: String, default: ''},
   resetOtpExpireAt: {type: Number, default: 0},
-  registrationDate: { type: Date, default: Date.now }, // Add registration date
-  role: { type: String, enum: ['user', 'admin'], default: 'user' } // Add role field
+  registrationDate: { type: Date, default: Date.now }, 
+  role: { type: String, enum: ['user', 'admin'], default: 'user' } 
 })
 
 const userModel = mongoose.model.user || mongoose.model('User', userSchema);

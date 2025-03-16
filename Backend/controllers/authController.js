@@ -73,7 +73,8 @@ The OneMenu Team
     }
 };
 
-// Login function
+//////Role Based Access Here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+// Login Function
 module.exports.login = async (req, res) => {
     const { email, password } = req.body;
 
@@ -92,7 +93,7 @@ module.exports.login = async (req, res) => {
             return res.json({ success: false, message: "Invalid password" });
         }
 
-        const token = Jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+        const token = Jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
         res.cookie("token", token, {
             httpOnly: true,
@@ -101,13 +102,17 @@ module.exports.login = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
-        return res.json({ success: true, token }); // ✅ Return token for debugging
+        // Return role-specific responses
+        if (user.role === "admin") {
+            return res.json({ success: true, token, role: "admin", redirectUrl: "/Home" });
+        } else {
+            return res.json({ success: true, token, role: "user", redirectUrl: "/home" });
+        }
     } catch (error) {
         console.error("Login Error:", error);
         return res.json({ success: false, message: error.message });
     }
 };
-
 
 // Logout function
 module.exports.logout = async (req, res) => {
