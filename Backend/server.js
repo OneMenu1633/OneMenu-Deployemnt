@@ -17,8 +17,11 @@ const FreshJuice = require('./models/FreshJuice.js');
 const AnnaDishes = require('./models/AnnaDishes.js');
 const itemsRoutes = require('./routes/itemRoutes.js'); 
 const Order = require('./models/Order'); // Import the Order model
-
 const analysisController = require('./controllers/analysisController'); // Import the analysis controller
+const WebSocket = require("ws");
+const transporter = require('./Config/nodemailer.js');
+
+
 
 // Load environment variables
 require('dotenv').config();
@@ -37,7 +40,7 @@ const PORT = process.env.PORT || 5000;
     
 // // MongoDB Connection URI
 const MONGODB_URI = process.env.MONGODB_URI;
-const allowedOrigin = ['http://localhost:5173', 'http://localhost:5174', 'https://onemenu-admin.netlify.app', 'https://onemenu.netlify.app', 'https://onemenuadmin.netlify.app', 'https://onemenubyit.netlify.app' ];
+const allowedOrigin = ['http://localhost:5173', 'http://localhost:5174', 'https://onemenu-admin.netlify.app', 'https://onemenu.netlify.app', 'https://onemenubyit.netlify.app', 'https://onemenuadmin.netlify.app'];
 
 // Middleware
 app.use(cors({
@@ -54,6 +57,111 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true 
     .then(() => console.log('MongoDB connected successfully 🚀'))
     .catch(error => console.error('MongoDB connection error:', error));
 
+    
+// Create WebSocket server
+const wss = new WebSocket.Server({ port: 8080 });
+
+wss.on("connection", (ws) => {
+  console.log("Client connected");
+
+  // Send existing orders to the client
+  Order.find({ paymentStatus: "Success" })
+    .then((orders) => {
+      ws.send(JSON.stringify({ type: "INITIAL_ORDERS", data: orders }));
+    })
+    .catch((err) => {
+      console.error("Error fetching orders:", err);
+    });
+
+  // Listen for new orders in the database
+  const orderChangeStream = Order.watch();
+
+  orderChangeStream.on("change", (change) => {
+    if (change.operationType === "insert") {
+      const newOrder = change.fullDocument;
+      ws.send(JSON.stringify({ type: "NEW_ORDER", data: newOrder }));
+    }
+  });
+
+  // Clean up on client disconnect
+  ws.on("close", () => {
+    console.log("Client disconnected");
+    orderChangeStream.close();
+  });
+});
+
+console.log("WebSocket server is running on ws://localhost:8080");
+async function updateOrderStatusInDatabase(orderId, status) {
+
+  // Update order in the database
+  const updatedOrder = await Order.findByIdAndUpdate(orderId, { status }, { new: true });
+
+  if (!updatedOrder) {
+      throw new Error('Order not found');
+  }
+
+  return updatedOrder;
+}
+
+// PUT /api/order/:orderId - Update order status
+app.put('/api/order/:orderId', async (req, res) => {
+  const { orderId } = req.params;
+  const { status } = req.body;
+
+  try {
+    // Update the order status in the database
+    const updatedOrder = await updateOrderStatusInDatabase(orderId, status);
+
+    // Send an email to the user
+    const emailSubject = `Your Order Status Has Been Updated`;
+    const emailText = `Your order (ID: ${orderId}) status has been updated to: ${status}.`;
+    await sendEmail(updatedOrder.customer.email, emailSubject, emailText);
+
+    res.status(200).json({ message: 'Order status updated successfully', updatedOrder });
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    res.status(500).json({ error: 'Failed to update order status' });
+  }
+});
+
+const sendEmail = async (to, subject, html) => {
+  try {
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to,
+      subject,
+      html, // Use HTML instead of plain text
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log('Email sent successfully');
+  } catch (error) {
+    console.error('Error sending email:', error);
+  }
+};
+
+wss.on("connection", (ws) => {
+  console.log("Client connected");
+
+  ws.on("message", (message) => {
+    const data = JSON.parse(message);
+
+    if (data.type === "SUBSCRIBE_ORDER") {
+      // Subscribe the client to updates for a specific order
+      ws.orderId = data.orderId;
+    }
+  });
+
+  // Simulate order status updates (replace with your actual logic)
+  setInterval(() => {
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN && client.orderId) {
+        const status = ["Pending", "Ready", "Delivered"][Math.floor(Math.random() * 3)];
+        client.send(JSON.stringify({ type: "ORDER_STATUS_UPDATE", orderId: client.orderId, status }));
+      }
+    });
+  }, 5000); // Send updates every 5 seconds
+});
 
 // Routes
 app.get('/analysis', analysisController.getAnalysis); // Use the getAnalysis function

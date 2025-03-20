@@ -12,7 +12,7 @@ const orderSchema = new mongoose.Schema({
   customer: {
     name: String,
     email: String,
-    contact: String,
+    // contact: String,
   },
 });
 

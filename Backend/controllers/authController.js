@@ -104,7 +104,7 @@ module.exports.login = async (req, res) => {
 
         // Return role-specific responses
         if (user.role === "admin") {
-            return res.json({ success: true, token, role: "admin", redirectUrl: "/Home" });
+            return res.json({ success: true, token, role: "admin", redirectUrl: "/" });
         } else {
             return res.json({ success: true, token, role: "user", redirectUrl: "/home" });
         }
