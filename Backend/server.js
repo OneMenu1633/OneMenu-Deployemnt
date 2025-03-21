@@ -58,7 +58,7 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true 
     .catch(error => console.error('MongoDB connection error:', error));
 
     
-// Create WebSocket server
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WebSocket server for Auto refresh in admin
 const wss = new WebSocket.Server({ port: 8080 });
 
 wss.on("connection", (ws) => {
@@ -91,13 +91,19 @@ wss.on("connection", (ws) => {
 });
 
 console.log("WebSocket server is running on ws://localhost:8080");
-async function updateOrderStatusInDatabase(orderId, status) {
 
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Email For Updated order Status
+async function updateOrderStatusInDatabase(orderId, status) {
   // Update order in the database
-  const updatedOrder = await Order.findByIdAndUpdate(orderId, { status }, { new: true });
+  const updatedOrder = await Order.findByIdAndUpdate(
+    orderId,
+    { orderStatus: status },
+    { new: true }
+  );
 
   if (!updatedOrder) {
-      throw new Error('Order not found');
+    throw new Error('Order not found');
   }
 
   return updatedOrder;
@@ -112,10 +118,12 @@ app.put('/api/order/:orderId', async (req, res) => {
     // Update the order status in the database
     const updatedOrder = await updateOrderStatusInDatabase(orderId, status);
 
-    // Send an email to the user
+    // Generate email content with order details
     const emailSubject = `Your Order Status Has Been Updated`;
-    const emailText = `Your order (ID: ${orderId}) status has been updated to: ${status}.`;
-    await sendEmail(updatedOrder.customer.email, emailSubject, emailText);
+    const emailHtml = generateOrderEmailContent(updatedOrder, status);
+
+    // Send an email to the user
+    await sendEmail(updatedOrder.customer.email, emailSubject, emailHtml);
 
     res.status(200).json({ message: 'Order status updated successfully', updatedOrder });
   } catch (error) {
@@ -124,13 +132,191 @@ app.put('/api/order/:orderId', async (req, res) => {
   }
 });
 
+// Function to generate email content with order details
+const generateOrderEmailContent = (order, status) => {
+  const orderDate = new Date(order.date).toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+
+  const itemsList = order.items
+    .map(
+      (item) => `
+      <tr>
+        <td>${item.title}</td>
+        <td>₹${item.price}</td>
+        <td>${item.quantity}</td>
+        <td>₹${item.price * item.quantity}</td>
+      </tr>
+    `
+    )
+    .join("");
+
+  return `
+<html>
+  <head>
+    <style>
+      body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f8f9fa;
+        margin: 0;
+        padding: 0;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      .email-header {
+        background-color: #DDE6FE; /* Light blue for header */
+        color: #333333; /* Dark text for contrast */
+        text-align: center;
+        padding: 20px;
+      }
+      .email-header h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: bold;
+      }
+      .email-body {
+        padding: 20px;
+        color: #333333;
+      }
+      .order-details {
+        margin-bottom: 20px;
+      }
+      .order-details h2 {
+        font-size: 20px;
+        margin-bottom: 10px;
+        color: #6C63FF; /* Accent color for headings */
+      }
+      .order-details p {
+        margin: 5px 0;
+        color: #555555;
+      }
+      .order-items {
+        margin-bottom: 20px;
+      }
+      .order-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #eeeeee;
+      }
+      .order-item:last-child {
+        border-bottom: none;
+      }
+      .order-item .item-name {
+        font-weight: bold;
+        color: #333333;
+      }
+      .order-item .item-price {
+        color: #777777;
+      }
+      .order-item .item-quantity {
+        color: #777777;
+      }
+      .order-total {
+        font-size: 18px;
+        font-weight: bold;
+        text-align: right;
+        margin-top: 20px;
+        color: #6C63FF; /* Accent color for total amount */
+      }
+      .email-footer {
+        text-align: center;
+        padding: 20px;
+        background-color: #FAF5FF; /* Light purple for footer */
+        color: #777777;
+        font-size: 14px;
+      }
+      .email-footer a {
+        color: #6C63FF; /* Accent color for links */
+        text-decoration: none;
+      }
+      .email-footer a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <!-- Header -->
+      <div class="email-header">
+        <h1>Your Order Status Has Been Updated</h1>
+      </div>
+
+      <!-- Body -->
+      <div class="email-body">
+        <p>Hi ${order.customer.name},</p>
+        <p>Your order (ID: ${order.orderId}) status has been updated to: <strong>${status}</strong>.</p>
+
+        <div class="order-details">
+          <h2>Order Details</h2>
+          <p><strong>Order Placed On:</strong> ${new Date(order.date).toLocaleString("en-GB", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: true,
+          })}</p>
+        </div>
+
+        <!-- Order Items -->
+        <div class="order-items">
+          ${order.items
+            .map(
+              (item) => `
+            <div class="order-item">
+              <div class="item-name">${item.title}</div>
+              <div class="item-price">₹${item.price} x ${item.quantity}</div>
+              <div class="item-total">₹${item.price * item.quantity}</div>
+            </div>
+          `
+            )
+            .join("")}
+        </div>
+
+        <!-- Order Total -->
+        <div class="order-total">
+          Total Amount: ₹${order.totalAmount}
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="email-footer">
+        <p>
+          Thank you for ordering with <strong>OneMenu</strong>! We hope you enjoy your meal. 🍔🍕
+        </p>
+        <p>
+          If you have any questions, feel free to <a href="mailto:onemenu.it@gmail.com">contact us</a>.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
+  `;
+};
+
+// Function to send email
 const sendEmail = async (to, subject, html) => {
   try {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to,
       subject,
-      html, // Use HTML instead of plain text
+      html, // Use HTML for rich content
     };
 
     await transporter.sendMail(mailOptions);
@@ -163,10 +349,11 @@ wss.on("connection", (ws) => {
   }, 5000); // Send updates every 5 seconds
 });
 
+
 // Routes
 app.get('/analysis', analysisController.getAnalysis); // Use the getAnalysis function
 
-// // Route: Fetch Products from Multiple Collections
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Route: Fetch Products from Multiple Collections
 app.get('/api/products/:menuType', async (req, res) => {
     const { menuType } = req.params;
   
@@ -193,7 +380,7 @@ app.get('/api/products/:menuType', async (req, res) => {
     }
   });
 
-// Route: Get all menus
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Route: Get all menus
 app.get('/products/menu', async (req, res) => {
   try {
     const foodItems = await Fooditems.find();
@@ -216,12 +403,12 @@ app.get('/products/menu', async (req, res) => {
 });
 
 
-// Dashboard
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Dashboard
 app.get('/', (req, res)=> res.send("App Working"));
 app.use('/api/auth', authRouter)
 app.use('/api/user', userRouter)
 
-// POST endpoint for adding an order
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! POST endpoint for adding an order
 app.post('/api/order', async (req, res) => {
   try {
     const newOrder = new Order({
@@ -243,7 +430,8 @@ app.post('/api/order', async (req, res) => {
   }
 });
 
-// GET route to fetch all orders
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! GET route to fetch all orders
 app.get('/api/order', (req, res) => {
   Order.find()
     .sort({ date: -1 }) // Sort by date in descending order
@@ -256,7 +444,8 @@ app.get('/api/order', (req, res) => {
     });
 });
 
-// Route setup with /api prefix for Edit Item
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Route setup with /api prefix for Edit Item
 app.put('/api/products/update/:stall/:id', async (req, res) => {
   const { stall, id } = req.params; // `stall` will tell which model to use
   const { title, price, name, rating } = req.body;
@@ -301,7 +490,8 @@ app.put('/api/products/update/:stall/:id', async (req, res) => {
   }
 });
 
-// Delete product by ID
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Delete product by ID
 app.delete("/api/products/delete/:stall/:id", async (req, res) => {
   try {
     const { stall, id } = req.params;
@@ -398,7 +588,7 @@ app.put('/api/products/toggle-availability/:stall/:id', async (req, res) => {
   }
 });
 
-// PUT route to update the order status of an order
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! PUT route to update the order status of an order
 app.put('/api/order/:orderId', (req, res) => {
   const { orderId } = req.params;
   const { status } = req.body;
@@ -419,7 +609,7 @@ app.put('/api/order/:orderId', (req, res) => {
     });
 });
 
-// GET /api/order/:orderId/status
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! GET /api/order/:orderId/status
 app.get('/api/order/:orderId/status', async (req, res) => {
   const { orderId } = req.params;
 
@@ -435,7 +625,7 @@ app.get('/api/order/:orderId/status', async (req, res) => {
   }
 });
 
-// Add Item
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Add Item
 app.use('/api', itemsRoutes);
 
 // server.js or app.js (your backend file)

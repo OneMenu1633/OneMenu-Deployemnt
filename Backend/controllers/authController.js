@@ -37,27 +37,121 @@ module.exports.register = async (req, res) => {
             from: process.env.SENDER_EMAIL,
             to: email,
             subject: 'Welcome to OneMenu Account Successfully Created',
-            text: `Your OneMenu account has been successfully created! You can now enjoy a seamless and automated canteen experience.
-
-Registered Email: ${email}
-
-Security Reminder:
-
-Keep your account details confidential.
-OneMenu will never ask for your password or OTP.
-If you didn’t sign up for this account, contact us immediately.
-Need Help?
-Our support team is here for you! Reach us at:
-onemenu.it@gmail.com
-
-Welcome aboard! 
-
-Best Regards,
-The OneMenu Team
-
-⚠ This is an automated email. Please do not reply.`
-
-        }
+            html: `
+              <html>
+                <head>
+                  <style>
+                    body {
+                      font-family: 'Arial', sans-serif;
+                      background-color: #f8f9fa;
+                      margin: 0;
+                      padding: 0;
+                    }
+                    .email-container {
+                      max-width: 600px;
+                      margin: 0 auto;
+                      background-color: #ffffff;
+                      border-radius: 12px;
+                      overflow: hidden;
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                    }
+                    .email-header {
+                      background-color: #DDE6FE; /* Light blue for header */
+                      color: #333333; /* Dark text for contrast */
+                      text-align: center;
+                      padding: 20px;
+                    }
+                    .email-header h1 {
+                      margin: 0;
+                      font-size: 24px;
+                      font-weight: bold;
+                    }
+                    .email-body {
+                      padding: 20px;
+                      color: #333333;
+                    }
+                    .email-body h2 {
+                      font-size: 20px;
+                      margin-bottom: 10px;
+                      color: #6C63FF; /* Accent color for headings */
+                    }
+                    .email-body p {
+                      margin: 5px 0;
+                      color: #555555;
+                      line-height: 1.6;
+                    }
+                    .email-body a {
+                      color: #6C63FF; /* Accent color for links */
+                      text-decoration: none;
+                    }
+                    .email-body a:hover {
+                      text-decoration: underline;
+                    }
+                    .security-notice {
+                      background-color: #DDE6FE; /* Light blue for security notice */
+                      padding: 15px;
+                      border-radius: 8px;
+                      margin: 20px 0;
+                      color: #555555;
+                    }
+                    .security-notice strong {
+                      color: #6C63FF; /* Accent color for strong text */
+                    }
+                    .email-footer {
+                      text-align: center;
+                      padding: 20px;
+                      background-color: #FAF5FF; /* Light purple for footer */
+                      color: #777777;
+                      font-size: 14px;
+                    }
+                    .email-footer a {
+                      color: #6C63FF; /* Accent color for links */
+                      text-decoration: none;
+                    }
+                    .email-footer a:hover {
+                      text-decoration: underline;
+                    }
+                  </style>
+                </head>
+                <body>
+                  <div class="email-container">
+                    <!-- Header -->
+                    <div class="email-header">
+                      <h1>Welcome to OneMenu</h1>
+                    </div>
+          
+                    <!-- Body -->
+                    <div class="email-body">
+                      <h2>Account Successfully Created!</h2>
+                      <p>Your <strong>OneMenu</strong> account has been successfully created! You can now enjoy a seamless and automated canteen experience.</p>
+          
+                      <p><strong>Registered Email:</strong> ${email}</p>
+          
+                      <!-- Security Notice -->
+                      <div class="security-notice">
+                        <p><strong>Security Reminder:</strong></p>
+                        <ul>
+                          <li>Keep your account details confidential.</li>
+                          <li>OneMenu will never ask for your password or OTP.</li>
+                          <li>If you didn’t sign up for this account, contact us immediately.</li>
+                        </ul>
+                      </div>
+          
+                      <p><strong>Need Help?</strong> Our support team is here for you! Reach us at: <a href="mailto:onemenu.it@gmail.com">onemenu.it@gmail.com</a>.</p>
+                    </div>
+          
+                    <!-- Footer -->
+                    <div class="email-footer">
+                      <p>Welcome aboard!</p>
+                      <p>Best Regards,</p>
+                      <p>The <strong>OneMenu</strong> Team</p>
+                      <p>⚠ This is an automated email. Please do not reply.</p>
+                    </div>
+                  </div>
+                </body>
+              </html>
+            `,
+          };
 
         try {
             await transporter.sendMail(mailOption); // Ensure this is called on the correct object
@@ -164,23 +258,133 @@ module.exports.sendVerifyOtp = async (req, res) => {
             from: process.env.SENDER_EMAIL,
             to: user.email,
             subject: "Secure Your AIKTC OneMenu Account – OTP Inside!",
-            text: `Thank you for choosing AIKTC OneMenu App! To secure your account, please verify your email by entering the One-Time Password (OTP) below within the next 24 hours:
-
-OTP: ${otp}
-
-Important Security Notice:
-
-Never share your OTP with anyone, including AIKTC OneMenu staff.
-We will never ask for your OTP via call, message, or email.
-If you did not request this verification, please ignore this email. Your account will remain secure.
-For any assistance, contact us at:
-onemenu.it@gmail.com
-
-Stay secure,
-The AIKTC OneMenu App Team
-
-⚠ This is an automated email. Replies to this message are not monitored.`,
-        };
+            html: `
+              <html>
+                <head>
+                  <style>
+                    body {
+                      font-family: 'Arial', sans-serif;
+                      background-color: #f8f9fa;
+                      margin: 0;
+                      padding: 0;
+                    }
+                    .email-container {
+                      max-width: 600px;
+                      margin: 0 auto;
+                      background-color: #ffffff;
+                      border-radius: 12px;
+                      overflow: hidden;
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                    }
+                    .email-header {
+                      background-color: #DDE6FE; /* Light blue for header */
+                      color: #333333; /* Dark text for contrast */
+                      text-align: center;
+                      padding: 20px;
+                    }
+                    .email-header h1 {
+                      margin: 0;
+                      font-size: 24px;
+                      font-weight: bold;
+                    }
+                    .email-body {
+                      padding: 20px;
+                      color: #333333;
+                    }
+                    .email-body h2 {
+                      font-size: 20px;
+                      margin-bottom: 10px;
+                      color: #6C63FF; /* Accent color for headings */
+                    }
+                    .email-body p {
+                      margin: 5px 0;
+                      color: #555555;
+                      line-height: 1.6;
+                    }
+                    .email-body a {
+                      color: #6C63FF; /* Accent color for links */
+                      text-decoration: none;
+                    }
+                    .email-body a:hover {
+                      text-decoration: underline;
+                    }
+                    .otp-box {
+                      background-color: #FAF5FF; /* Light purple for OTP box */
+                      padding: 15px;
+                      border-radius: 8px;
+                      text-align: center;
+                      margin: 20px 0;
+                      font-size: 18px;
+                      font-weight: bold;
+                      color: #333333;
+                    }
+                    .security-notice {
+                      background-color: #DDE6FE; /* Light blue for security notice */
+                      padding: 15px;
+                      border-radius: 8px;
+                      margin: 20px 0;
+                      color: #555555;
+                    }
+                    .security-notice strong {
+                      color: #6C63FF; /* Accent color for strong text */
+                    }
+                    .email-footer {
+                      text-align: center;
+                      padding: 20px;
+                      background-color: #FAF5FF; /* Light purple for footer */
+                      color: #777777;
+                      font-size: 14px;
+                    }
+                    .email-footer a {
+                      color: #6C63FF; /* Accent color for links */
+                      text-decoration: none;
+                    }
+                    .email-footer a:hover {
+                      text-decoration: underline;
+                    }
+                  </style>
+                </head>
+                <body>
+                  <div class="email-container">
+                    <!-- Header -->
+                    <div class="email-header">
+                      <h1>AIKTC OneMenu</h1>
+                    </div>
+          
+                    <!-- Body -->
+                    <div class="email-body">
+                      <h2>Secure Your Account – OTP Inside!</h2>
+                      <p>Thank you for choosing <strong>AIKTC OneMenu App</strong>! To secure your account, please verify your email by entering the One-Time Password (OTP) below within the next 24 hours:</p>
+          
+                      <!-- OTP Box -->
+                      <div class="otp-box">
+                        Your OTP: <strong>${otp}</strong>
+                      </div>
+          
+                      <!-- Security Notice -->
+                      <div class="security-notice">
+                        <p><strong>Important Security Notice:</strong></p>
+                        <ul>
+                          <li>Never share your OTP with anyone, including AIKTC OneMenu staff.</li>
+                          <li>We will never ask for your OTP via call, message, or email.</li>
+                          <li>If you did not request this verification, please ignore this email. Your account will remain secure.</li>
+                        </ul>
+                      </div>
+          
+                      <p>For any assistance, feel free to <a href="mailto:onemenu.it@gmail.com">contact us</a>.</p>
+                    </div>
+          
+                    <!-- Footer -->
+                    <div class="email-footer">
+                      <p>Stay secure,</p>
+                      <p>The <strong>AIKTC OneMenu App</strong> Team</p>
+                      <p>⚠ This is an automated email. Replies to this message are not monitored.</p>
+                    </div>
+                  </div>
+                </body>
+              </html>
+            `,
+          };
 
         await transporter.sendMail(mailOption);
 
@@ -295,24 +499,133 @@ module.exports.sendResetOtp = async (req, res) => {
             from: process.env.SENDER_EMAIL,
             to: user.email,
             subject: 'Password Reset OTP',
-            text: `A request to reset your password has been received. Use the One-Time Password (OTP) below to proceed:
-
-OTP: ${otp}
-
-Important Security Notice:
-
-This OTP is valid for 24 hours.
-Do not share your OTP with anyone. AIKTC OneMenu will never ask for it.
-If you did not request a password reset, please ignore this email.
-For any assistance, contact us at:
-onemenu.it@gmail.com
-
-Stay secure,
-The AIKTC OneMenu App Team
-
-⚠ This is an automated email. Replies to this message are not monitored.`,
-        };
-
+            html: `
+              <html>
+                <head>
+                  <style>
+                    body {
+                      font-family: 'Arial', sans-serif;
+                      background-color: #f8f9fa;
+                      margin: 0;
+                      padding: 0;
+                    }
+                    .email-container {
+                      max-width: 600px;
+                      margin: 0 auto;
+                      background-color: #ffffff;
+                      border-radius: 12px;
+                      overflow: hidden;
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                    }
+                    .email-header {
+                      background-color: #DDE6FE; /* Light blue for header */
+                      color: #333333; /* Dark text for contrast */
+                      text-align: center;
+                      padding: 20px;
+                    }
+                    .email-header h1 {
+                      margin: 0;
+                      font-size: 24px;
+                      font-weight: bold;
+                    }
+                    .email-body {
+                      padding: 20px;
+                      color: #333333;
+                    }
+                    .email-body h2 {
+                      font-size: 20px;
+                      margin-bottom: 10px;
+                      color: #6C63FF; /* Accent color for headings */
+                    }
+                    .email-body p {
+                      margin: 5px 0;
+                      color: #555555;
+                      line-height: 1.6;
+                    }
+                    .email-body a {
+                      color: #6C63FF; /* Accent color for links */
+                      text-decoration: none;
+                    }
+                    .email-body a:hover {
+                      text-decoration: underline;
+                    }
+                    .otp-box {
+                      background-color: #FAF5FF; /* Light purple for OTP box */
+                      padding: 15px;
+                      border-radius: 8px;
+                      text-align: center;
+                      margin: 20px 0;
+                      font-size: 18px;
+                      font-weight: bold;
+                      color: #333333;
+                    }
+                    .security-notice {
+                      background-color: #DDE6FE; /* Light blue for security notice */
+                      padding: 15px;
+                      border-radius: 8px;
+                      margin: 20px 0;
+                      color: #555555;
+                    }
+                    .security-notice strong {
+                      color: #6C63FF; /* Accent color for strong text */
+                    }
+                    .email-footer {
+                      text-align: center;
+                      padding: 20px;
+                      background-color: #FAF5FF; /* Light purple for footer */
+                      color: #777777;
+                      font-size: 14px;
+                    }
+                    .email-footer a {
+                      color: #6C63FF; /* Accent color for links */
+                      text-decoration: none;
+                    }
+                    .email-footer a:hover {
+                      text-decoration: underline;
+                    }
+                  </style>
+                </head>
+                <body>
+                  <div class="email-container">
+                    <!-- Header -->
+                    <div class="email-header">
+                      <h1>OneMenu</h1>
+                    </div>
+          
+                    <!-- Body -->
+                    <div class="email-body">
+                      <h2>Password Reset Request</h2>
+                      <p>A request to reset your password has been received. Use the One-Time Password (OTP) below to proceed:</p>
+          
+                      <!-- OTP Box -->
+                      <div class="otp-box">
+                        Your OTP: <strong>${otp}</strong>
+                      </div>
+          
+                      <!-- Security Notice -->
+                      <div class="security-notice">
+                        <p><strong>Important Security Notice:</strong></p>
+                        <ul>
+                          <li>This OTP is valid for 24 hours.</li>
+                          <li>Do not share your OTP with anyone. OneMenu will never ask for it.</li>
+                          <li>If you did not request a password reset, please ignore this email.</li>
+                        </ul>
+                      </div>
+          
+                      <p>For any assistance, feel free to <a href="mailto:onemenu.it@gmail.com">contact us</a>.</p>
+                    </div>
+          
+                    <!-- Footer -->
+                    <div class="email-footer">
+                      <p>Stay secure,</p>
+                      <p>The <strong>OneMenu</strong> Team</p>
+                      <p>⚠ This is an automated email. Replies to this message are not monitored.</p>
+                    </div>
+                  </div>
+                </body>
+              </html>
+            `,
+          };
         // Send the email
         await transporter.sendMail(mailOption);
 
