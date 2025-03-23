@@ -20,6 +20,7 @@ const Order = require('./models/Order'); // Import the Order model
 const analysisController = require('./controllers/analysisController'); // Import the analysis controller
 const WebSocket = require("ws");
 const transporter = require('./Config/nodemailer.js');
+const http = require("http");
 
 
 
@@ -59,7 +60,45 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true 
 
     
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WebSocket server for Auto refresh in admin
-const wss = new WebSocket.Server({ port: 8080 });
+// const wss = new WebSocket.Server({ port: 8080 });
+
+// wss.on("connection", (ws) => {
+//   console.log("Client connected");
+
+//   // Send existing orders to the client
+//   Order.find({ paymentStatus: "Success" })
+//     .then((orders) => {
+//       ws.send(JSON.stringify({ type: "INITIAL_ORDERS", data: orders }));
+//     })
+//     .catch((err) => {
+//       console.error("Error fetching orders:", err);
+//     });
+
+//   // Listen for new orders in the database
+//   const orderChangeStream = Order.watch();
+
+//   orderChangeStream.on("change", (change) => {
+//     if (change.operationType === "insert") {
+//       const newOrder = change.fullDocument;
+//       ws.send(JSON.stringify({ type: "NEW_ORDER", data: newOrder }));
+//     }
+//   });
+
+//   // Clean up on client disconnect
+//   ws.on("close", () => {
+//     console.log("Client disconnected");
+//     orderChangeStream.close();
+//   });
+// });
+
+// console.log("WebSocket server is running on ws://localhost:8080");
+
+
+// Create an HTTP server
+const server = http.createServer();
+
+// Create a WebSocket server attached to the HTTP server
+const wss = new WebSocket.Server({ server });
 
 wss.on("connection", (ws) => {
   console.log("Client connected");
@@ -83,6 +122,11 @@ wss.on("connection", (ws) => {
     }
   });
 
+  // Handle WebSocket errors
+  ws.on("error", (error) => {
+    console.error("WebSocket error:", error);
+  });
+
   // Clean up on client disconnect
   ws.on("close", () => {
     console.log("Client disconnected");
@@ -90,9 +134,10 @@ wss.on("connection", (ws) => {
   });
 });
 
-console.log("WebSocket server is running on ws://localhost:8080");
-
-
+// Start the server on port 10000 (Render's default port)
+server.listen(10000, () => {
+  console.log("WebSocket server is running on wss://onemenu-deployment-musk.onrender.com");
+});
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Email For Updated order Status
 async function updateOrderStatusInDatabase(orderId, status) {
   // Update order in the database
