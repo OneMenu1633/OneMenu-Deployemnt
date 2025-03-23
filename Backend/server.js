@@ -18,9 +18,8 @@ const AnnaDishes = require('./models/AnnaDishes.js');
 const itemsRoutes = require('./routes/itemRoutes.js'); 
 const Order = require('./models/Order'); // Import the Order model
 const analysisController = require('./controllers/analysisController'); // Import the analysis controller
-const WebSocket = require("ws");
+// const WebSocket = require("ws");
 const transporter = require('./Config/nodemailer.js');
-const http = require("http");
 
 
 
@@ -59,46 +58,8 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true 
     .catch(error => console.error('MongoDB connection error:', error));
 
     
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WebSocket server for Auto refresh in admin
-const wss = new WebSocket.Server({ port: 8080 });
-
-wss.on("connection", (ws) => {
-  console.log("Client connected");
-
-  // Send existing orders to the client
-  Order.find({ paymentStatus: "Success" })
-    .then((orders) => {
-      ws.send(JSON.stringify({ type: "INITIAL_ORDERS", data: orders }));
-    })
-    .catch((err) => {
-      console.error("Error fetching orders:", err);
-    });
-
-  // Listen for new orders in the database
-  const orderChangeStream = Order.watch();
-
-  orderChangeStream.on("change", (change) => {
-    if (change.operationType === "insert") {
-      const newOrder = change.fullDocument;
-      ws.send(JSON.stringify({ type: "NEW_ORDER", data: newOrder }));
-    }
-  });
-
-  // Clean up on client disconnect
-  ws.on("close", () => {
-    console.log("Client disconnected");
-    orderChangeStream.close();
-  });
-});
-
-console.log("WebSocket server is running on wss://onemenu-deployment-musk.onrender.com/ws");
-
-
-// // Create an HTTP server
-// const server = http.createServer();
-
-// // Create a WebSocket server attached to the HTTP server
-// const wss = new WebSocket.Server({ server });
+// // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WebSocket server for Auto refresh in admin
+// const wss = new WebSocket.Server({ port: 8080 });
 
 // wss.on("connection", (ws) => {
 //   console.log("Client connected");
@@ -122,11 +83,6 @@ console.log("WebSocket server is running on wss://onemenu-deployment-musk.onrend
 //     }
 //   });
 
-//   // Handle WebSocket errors
-//   ws.on("error", (error) => {
-//     console.error("WebSocket error:", error);
-//   });
-
 //   // Clean up on client disconnect
 //   ws.on("close", () => {
 //     console.log("Client disconnected");
@@ -134,10 +90,8 @@ console.log("WebSocket server is running on wss://onemenu-deployment-musk.onrend
 //   });
 // });
 
-// // Start the server on port 10000 (Render's default port)
-// server.listen(5000, () => {
-//   console.log("WebSocket server is running on wss://onemenu-deployment-musk.onrender.com");
-// });
+// console.log("WebSocket server is running on wss://onemenu-deployment-musk.onrender.com/ws");
+
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Email For Updated order Status
 async function updateOrderStatusInDatabase(orderId, status) {
   // Update order in the database
@@ -371,28 +325,28 @@ const sendEmail = async (to, subject, html) => {
   }
 };
 
-wss.on("connection", (ws) => {
-  console.log("Client connected");
+// wss.on("connection", (ws) => {
+//   console.log("Client connected");
 
-  ws.on("message", (message) => {
-    const data = JSON.parse(message);
+//   ws.on("message", (message) => {
+//     const data = JSON.parse(message);
 
-    if (data.type === "SUBSCRIBE_ORDER") {
-      // Subscribe the client to updates for a specific order
-      ws.orderId = data.orderId;
-    }
-  });
+//     if (data.type === "SUBSCRIBE_ORDER") {
+//       // Subscribe the client to updates for a specific order
+//       ws.orderId = data.orderId;
+//     }
+//   });
 
-  // Simulate order status updates (replace with your actual logic)
-  setInterval(() => {
-    wss.clients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN && client.orderId) {
-        const status = ["Pending", "Ready", "Delivered"][Math.floor(Math.random() * 3)];
-        client.send(JSON.stringify({ type: "ORDER_STATUS_UPDATE", orderId: client.orderId, status }));
-      }
-    });
-  }, 5000); // Send updates every 5 seconds
-});
+//   // Simulate order status updates (replace with your actual logic)
+//   setInterval(() => {
+//     wss.clients.forEach((client) => {
+//       if (client.readyState === WebSocket.OPEN && client.orderId) {
+//         const status = ["Pending", "Ready", "Delivered"][Math.floor(Math.random() * 3)];
+//         client.send(JSON.stringify({ type: "ORDER_STATUS_UPDATE", orderId: client.orderId, status }));
+//       }
+//     });
+//   }, 5000); // Send updates every 5 seconds
+// });
 
 
 // Routes
