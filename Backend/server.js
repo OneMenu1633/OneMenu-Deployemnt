@@ -135,7 +135,7 @@ wss.on("connection", (ws) => {
 });
 
 // Start the server on port 10000 (Render's default port)
-server.listen(10000, () => {
+server.listen(1000, () => {
   console.log("WebSocket server is running on wss://onemenu-deployment-musk.onrender.com");
 });
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Email For Updated order Status
